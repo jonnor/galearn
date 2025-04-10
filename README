@@ -1,5 +1,5 @@
 Gate Array Learn
 
-	apt install yosys fpga-icestorm nextpnr-ice40
+	apt install yosys fpga-icestorm nextpnr-ice40 verilator flashrom
 	make
 	doas make load
