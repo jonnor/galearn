@@ -1,1 +1,5 @@
 Gate Array Learn
+
+	apt install yosys fpga-icestorm nextpnr-ice40
+	make
+	doas make load
