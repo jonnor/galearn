@@ -20,11 +20,11 @@ module top(
 
 	rot		rot_1(ftdi_rx, {D1, D2, D3, D4});
 
-	assign p44 = clk_uart;
-	assign p45 = ftdi_tx;
+	//assign p44 = go;
+	//assign p45 = ftdi_tx;
 
-	//assign p44 = pdm_clk;
-	//assign p45 = pdm_dat;
+	assign p44 = pdm_clk;
+	assign p45 = pdm_dat;
 
 	clk_div_uart	clk_div_uart_1(clk, clk_uart);
 	uart_tx		uart_tx_1(clk_uart, char, go, ftdi_tx, uart_ready);
@@ -33,8 +33,7 @@ module top(
 	always @(posedge clk_uart) begin
 		if (t<128) begin
 			if (!go && uart_ready) begin
-				//char <= t[7:0];
-				char <= pcm;
+				char <= pdm[t[6:0]] ? 8'h31 : 8'h30;
 				go <= 1;
 				t <= t+1;
 			end
@@ -42,7 +41,7 @@ module top(
 				go <= 0;
 			end
 		end else begin
-			if (ftdi_rx) begin
+			if (!ftdi_rx) begin
 				t <= 0;
 			end
 		end
@@ -53,21 +52,14 @@ module top(
 
 	clk_div_pdm	clk_div_pdm_1(clk, pdm_clk);
 
-	reg [7:0]	pdm_t = 0;
-	reg [7:0]	pcm = 128;
+	reg [15:0]	pdm_t = 0;
+	reg		pdm	[127:0];
 	always @(posedge pdm_clk) begin
-		if (pdm_t < 16) begin
-			if (pdm_dat && pcm < 255) begin
-				pcm <= pcm + 1;
-			end else if (!pdm_dat && 0 < pcm) begin
-				pcm <= pcm - 1;
-			end
-			pdm_t <= pdm_t + 1;
+		if (pdm_t < 128) begin
+			pdm[pdm_t[6:0]] <= pdm_dat;
+			pdm_t <= pdm_t+1;
 		end else begin
-			if (pcm < 128)
-				pcm <= pcm + 1;
-			else
-				pcm <= pcm - 1;
+			led5 <= !led5;
 			pdm_t <= 0;
 		end
 	end
@@ -90,12 +82,8 @@ endmodule
 module clk_div_uart(input clk, output reg clk_uart);
 	reg [10:0] t = 0;
 	always @(posedge clk) begin
-		/*
 		t <= t<1250-1 ? t+1 : 0;
 		clk_uart <= t<625;
-		*/
-		t <= t<12-1 ? t+1 : 0;
-		clk_uart <= t<6;
 	end
 endmodule
 
