@@ -4,6 +4,10 @@ Gate Array Learn
 	make
 	doas make load
 
+Pulse Density Modulation
+	https://en.wikipedia.org/wiki/Pulse-code_modulation
+	https://curiouser.cheshireeng.com/2015/01/21/pdm-in-attiny85-source-code/
+
 Raspberry Pi UART
 	Enable serial communication in raspi-config.
 
