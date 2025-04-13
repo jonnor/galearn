@@ -14,3 +14,7 @@ Raspberry Pi UART
 UART
 	stty -F /dev/ttyUSB1 1000000 raw cs8
 	hexdump -ve '1/1 "%u\n"' /dev/ttyUSB1 | pv > pcm.txt
+
+	pv /dev/ttyUSB1 > pcm.raw
+	hexdump -ve '1/1 "%u\n"' pcm.raw > pcm.txt
+	play -r 48k -e unsigned-integer -b 8 -c 1 pcm.raw
