@@ -58,8 +58,9 @@ module top(
 		if (pdm_t < 128) begin
 			pdm[pdm_t[6:0]] <= pdm_dat;
 			pdm_t <= pdm_t+1;
-		end else if (pdm_t == 128) begin
-			led5 <= 1;
+		end else begin
+			led5 <= !led5;
+			pdm_t <= 0;
 		end
 	end
 endmodule
