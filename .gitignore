@@ -1,3 +1,5 @@
+*.swp
+
 top.asc
 top.bin
 top.blif
