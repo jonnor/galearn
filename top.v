@@ -15,7 +15,7 @@ module top(
 	wire clk_uart;
 
 	reg [7:0]	char = 8'h6f;
-	reg		go = 0;
+	reg		uart_go = 0;
 	wire		uart_ready;
 
 	rot		rot_1(ftdi_rx, {D1, D2, D3, D4});
@@ -27,26 +27,18 @@ module top(
 	//assign p45 = pdm_dat;
 
 	clk_div_uart	clk_div_uart_1(clk, clk_uart);
-	uart_tx		uart_tx_1(clk_uart, char, go, ftdi_tx, uart_ready);
+	uart_tx		uart_tx_1(clk_uart, char, uart_go, ftdi_tx, uart_ready);
 
-	reg [15:0] t = 0;
-	always @(posedge clk_uart) begin
-		if (t<128) begin
-			if (!go && uart_ready) begin
-				//char <= t[7:0];
-				char <= pcm;
-				go <= 1;
-				t <= t+1;
-			end
-			if (go && !uart_ready) begin
-				go <= 0;
-			end
-		end else begin
-			if (ftdi_rx) begin
-				t <= 0;
-			end
-		end
+	// 48 kHz PCM
+	reg [7:0]	pcm_t = 0;
+	reg		pcm_clk;
+	always @(posedge clk) begin
+		pcm_clk <= pcm_t<125;
+		pcm_t <= pcm_t<250-1 ? pcm_t+1 : 0;
 	end
+
+	always @(posedge pcm_clk) char <= pcm;
+	assign uart_go = !pcm_clk;
 
 	reg led5 = 0;
 	assign D5 = led5;
