@@ -26,3 +26,6 @@ set_io D1	96
 set_io D2	97
 set_io D3	98
 set_io D4	99
+
+set_io pdm_clk	80
+set_io pdm_dat	79
