@@ -4,10 +4,6 @@ Gate Array Learn
 	make
 	doas make load
 
-Pulse Density Modulation
-	https://en.wikipedia.org/wiki/Pulse-code_modulation
-	https://curiouser.cheshireeng.com/2015/01/21/pdm-in-attiny85-source-code/
-
 Raspberry Pi UART
 	Enable serial communication in raspi-config.
 
@@ -18,3 +14,12 @@ UART
 	pv /dev/ttyUSB1 > pcm.raw
 	hexdump -ve '1/1 "%u\n"' pcm.raw > pcm.txt
 	play -r 48k -e unsigned-integer -b 8 -c 1 pcm.raw
+
+References
+	Pulse Density Modulation
+		https://curiouser.cheshireeng.com/2015/01/21/pdm-in-attiny85-source-code/
+		https://en.wikipedia.org/wiki/Pulse-code_modulation
+		https://tomverbeure.github.io/2020/10/04/PDM-Microphones-and-Sigma-Delta-Conversion.html
+		https://tomverbeure.github.io/2020/12/20/Design-of-a-Multi-Stage-PDM-to-PCM-Decimation-Pipeline.html
+	Verilog by Example (Blaine C. Raedler 2021)
+		http://readler.com/books2.html
