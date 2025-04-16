@@ -16,6 +16,8 @@ UART
 	play -r 48k -e unsigned-integer -b 8 -c 1 pcm.raw
 
 References
+	Adafruit PDM Microphone Breakout
+		https://learn.adafruit.com/adafruit-pdm-microphone-breakout/
 	Pulse Density Modulation
 		https://curiouser.cheshireeng.com/2015/01/21/pdm-in-attiny85-source-code/
 		https://en.wikipedia.org/wiki/Pulse-code_modulation
