@@ -1,0 +1,3 @@
+12 MHz clk  =>  12 MBd UART
+
+stty -F /dev/ttyUSB1 12000000 raw cs8

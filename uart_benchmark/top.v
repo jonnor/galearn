@@ -1,0 +1,80 @@
+module top(
+	input	clk,
+	output	ftdi_tx
+);
+	wire		clk_uart;
+	reg [7:0]	char = 8'h55;
+	reg		uart_go = 0;
+	wire		uart_ready;
+	uart_tx		uart_tx_1(clk_uart, char, uart_go, ftdi_tx, uart_ready);
+
+	always @(posedge clk) begin
+		uart_go <= uart_ready;
+	end
+
+	assign clk_uart = clk;
+endmodule
+
+module uart_tx(input clk, input [7:0] char, input go, output reg tx, output reg ready);
+	parameter s_ready =  0;
+	parameter s_start =  1;
+	parameter s_data0 =  2;
+	parameter s_data1 =  3;
+	parameter s_data2 =  4;
+	parameter s_data3 =  5;
+	parameter s_data4 =  6;
+	parameter s_data5 =  7;
+	parameter s_data6 =  8;
+	parameter s_data7 =  9;
+	parameter s_stop1 = 10;
+	parameter s_stop2 = 11;
+	parameter s_stop3 = 12;
+	parameter s_stop4 = 13;
+
+	reg [3:0]	state = s_ready;
+	reg [7:0]	data = 8'h41;
+
+	always @(posedge clk) begin
+		ready <= state == s_ready;
+		case (state)
+			s_ready: begin
+				if (go) begin
+					data <= char;
+					state <= s_start;
+				end
+			end
+			s_start:	state <= s_data0;
+			s_data0:	state <= s_data1;
+			s_data1:	state <= s_data2;
+			s_data2:	state <= s_data3;
+			s_data3:	state <= s_data4;
+			s_data4:	state <= s_data5;
+			s_data5:	state <= s_data6;
+			s_data6:	state <= s_data7;
+			s_data7:	state <= s_stop1;
+			s_stop1:	state <= s_stop2;
+			s_stop2:	state <= s_stop3;
+			s_stop3:	state <= s_stop4;
+			s_stop4: begin
+				if (!go)
+					state <= s_ready;
+			end
+		endcase
+		case (state)
+			s_ready:	tx <= 1;
+			s_start:	tx <= 0;
+			s_data0:	tx <= data[0];
+			s_data1:	tx <= data[1];
+			s_data2:	tx <= data[2];
+			s_data3:	tx <= data[3];
+			s_data4:	tx <= data[4];
+			s_data5:	tx <= data[5];
+			s_data6:	tx <= data[6];
+			s_data7:	tx <= data[7];
+			s_stop1:	tx <= 1;
+			s_stop2:	tx <= 1;
+			s_stop3:	tx <= 1;
+			s_stop4:	tx <= 1;
+		endcase
+	end
+endmodule
