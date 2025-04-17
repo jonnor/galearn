@@ -1,0 +1,28 @@
+set_io ftdi_tx	8
+set_io ftdi_rx	9
+
+set_io clk	21
+
+set_io p44	44
+set_io p45	45
+set_io p47	47
+set_io p48	48
+set_io p56	56
+set_io p60	60
+set_io p61	61
+set_io p62	62
+
+set_io p112	112
+set_io p113	113
+set_io p114	114
+set_io p115	115
+set_io p116	116
+set_io p117	117
+set_io p118	118
+set_io p119	119
+
+set_io D5	95
+set_io D1	96
+set_io D2	97
+set_io D3	98
+set_io D4	99
