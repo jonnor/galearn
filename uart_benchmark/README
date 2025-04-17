@@ -1,3 +1,4 @@
 12 MHz clk  =>  12 MBd UART
 
-stty -F /dev/ttyUSB1 12000000 raw cs8
+time timeout 30 picocom -b 12000000 /dev/ttyUSB1 | pv > U.txt
+hexdump -C U.txt
