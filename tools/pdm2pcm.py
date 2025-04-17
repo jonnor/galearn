@@ -9,7 +9,8 @@ def load_pdm_file(filename):
         byte_data = np.frombuffer(f.read(), dtype=np.uint8)
     bit_data = np.unpackbits(byte_data)
     # Convert to +1 (for 1s) and -1 (for 0s)
-    pdm_signal = 2 * bit_data - 1
+    #pdm_signal = 2 * bit_data - 1
+    pdm_signal = bit_data
     return pdm_signal
 
 def pdm_to_pcm(pdm_signal, decimation_factor=64):
@@ -36,15 +37,11 @@ def main():
     pcm_data = np.expand_dims(pcm_data, axis=1)
     #print(pcm_data.shape)
 
-    print(numpy.min(pcm_data), numpy.max(pcm_data), numpy.mean(pcm_data))
-
-    # Normalize
-    pcm_data -= 128.0
-    pcm_data = 2**13 * (pcm_data / np.max(np.abs(pcm_data)))
-
-    print(numpy.min(pcm_data), numpy.max(pcm_data), numpy.mean(pcm_data))
+    pcm_data -= numpy.mean(pcm_data) # remove DC offset
+    print(numpy.min(pcm_data), numpy.max(pcm_data), numpy.mean(pcm_data), pcm_data.dtype)
 
     soundfile.write(out_path, pcm_data, samplerate)
+    print('Wrote', out_path)
 
 if __name__ == '__main__':
     main()

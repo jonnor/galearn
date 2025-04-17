@@ -69,6 +69,7 @@ def main():
     with open(out_path, 'wb') as f:
         save_pdm_bin(pdm_data, f)
 
+    print('Wrote', out_path)
 
 if __name__ == '__main__':
     main()

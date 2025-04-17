@@ -31,7 +31,7 @@ if __name__ == "__main__":
     
     sample_rate = 16000
 
-    signal = generate_test_tone(sample_rate=sample_rate, freqs=[1000.0], noise_level=0.0)
+    signal = generate_test_tone(sample_rate=sample_rate, freqs=[1000.0, 440.0], noise_level=0.01)
 
     sf.write(filename, signal, sample_rate)
     print(f"Saved test tone to '{filename}'.")
