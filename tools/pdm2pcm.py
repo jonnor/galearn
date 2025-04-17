@@ -40,7 +40,7 @@ def main():
 
     # Normalize
     pcm_data -= 128.0
-    pcm_data = 2**15 * (pcm_data / np.max(np.abs(pcm_data)))
+    pcm_data = 2**13 * (pcm_data / np.max(np.abs(pcm_data)))
 
     print(numpy.min(pcm_data), numpy.max(pcm_data), numpy.mean(pcm_data))
 

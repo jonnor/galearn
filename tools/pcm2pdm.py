@@ -3,7 +3,7 @@ import soundfile
 
 def second_order_delta_sigma(pcm):
     # Normalize input XXX: remove normalization
-    pcm = pcm / np.max(np.abs(pcm))
+    #pcm = pcm / np.max(np.abs(pcm))
 
     n = len(pcm)
     pdm = np.zeros(n, dtype=np.uint8)
