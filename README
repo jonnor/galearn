@@ -18,6 +18,8 @@ UART
 References
 	Adafruit PDM Microphone Breakout
 		https://learn.adafruit.com/adafruit-pdm-microphone-breakout/
+	CIC filter in Verilog
+		https://github.com/ericgineer/CIC/blob/master/CIC.v
 	Pulse Density Modulation
 		https://curiouser.cheshireeng.com/2015/01/21/pdm-in-attiny85-source-code/
 		https://en.wikipedia.org/wiki/Pulse-code_modulation
