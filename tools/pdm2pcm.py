@@ -22,15 +22,28 @@ def pdm_to_pcm(pdm_signal, decimation_factor=64):
     pcm_signal = filtered[::decimation_factor]
     return pcm_signal
 
-def main():
+def parse():
+    import argparse
 
-    pdm_path = 'test_tone.pdm'
-    out_path = 'output.wav'
+    parser = argparse.ArgumentParser(description='Process an input file and write to an output file.')
+    parser.add_argument('-i', '--input', type=str, required=True, help='Path to the input file')
+    parser.add_argument('-o', '--output', type=str, required=True, help='Path to the output file')
+    parser.add_argument('--samplerate', type=int, default=16000)
+    parser.add_argument('--oversample', type=int, default=64)
+    
+    args = parser.parse_args()
+    return args
+
+def main():
+    args = parse()
+
+    pdm_path = args.input
+    out_path = args.output
     pdm_data = load_pdm_file(pdm_path)
 
     # Convert to PCM
-    oversample = 64
-    samplerate = 16000
+    oversample = args.oversample
+    samplerate = args.samplerate
     pcm_data = pdm_to_pcm(pdm_data, decimation_factor=oversample)
 
     # Normalize and save to WAV

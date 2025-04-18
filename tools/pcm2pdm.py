@@ -56,7 +56,9 @@ def parse():
     parser = argparse.ArgumentParser(description='Process an input file and write to an output file.')
     parser.add_argument('-i', '--input', type=str, required=True, help='Path to the input file')
     parser.add_argument('-o', '--output', type=str, required=True, help='Path to the output file')
-    
+    #parser.add_argument('--samplerate', type=int, default=16000)
+    parser.add_argument('--oversample', type=int, default=64)    
+
     args = parser.parse_args()
     return args
 
@@ -65,7 +67,7 @@ def main():
 
     out_path = args.output
 
-    pdm_data = convert_file(args.input, oversample=64)
+    pdm_data = convert_file(args.input, oversample=args.oversample)
     with open(out_path, 'wb') as f:
         save_pdm_bin(pdm_data, f)
 
