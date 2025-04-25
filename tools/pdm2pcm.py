@@ -75,7 +75,7 @@ def pdm_to_pcm(pdm_signal, decimation_factor=64, filter_type='fir', filter_kwarg
 
     elif filter_type == 'cic':
         # Use CIC filter
-        defaults = dict(stages=3, delay=1)
+        defaults = dict(stages=4, delay=1)
         kwargs = {}
         kwargs.update(defaults)
         kwargs.update(filter_kwargs)
