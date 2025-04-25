@@ -14,39 +14,50 @@ def load_pdm_file(filename):
     return pdm_signal
 
 
-def cic_decimate(input_signal, decimation_factor=64, stages=3, delay=1):
-    R = decimation_factor
-    N = stages
-    M = delay
+class CICFilter:
+    def __init__(self, decimation=64, delay=1, stages=3):
+        self.R = decimation
+        self.M = delay
+        self.N = stages
 
-    # Integrator stages
-    integrators = [0] * N
-    integrator_outputs = []
+        # Integrator and comb delay lines
+        self.integrators = [0] * self.N
+        self.comb_buffers = [[0] * self.M for _ in range(self.N)]
+        self.comb_indices = [0] * self.N
 
-    for sample in input_signal:
-        integrators[0] += sample
-        for i in range(1, N):
-            integrators[i] += integrators[i-1]
-        integrator_outputs.append(integrators[-1])
+        self.input_count = 0
 
-    # Decimation
-    decimated = integrator_outputs[R-1::R]
+    def process_sample(self, sample):
+        sample = int(sample)  # ensure it's Python int
 
-    # Comb stages
-    combs = [0] * N
-    comb_outputs = []
-    delays = [[0]*M for _ in range(N)]
+        for i in range(self.N):
+            self.integrators[i] = int(self.integrators[i] + sample)
+            sample = self.integrators[i]
 
-    for sample in decimated:
-        diff = sample
-        for i in range(N):
-            delayed = delays[i].pop(0)
-            delays[i].append(diff)
-            diff = diff - delayed
-            combs[i] = diff
-        comb_outputs.append(combs[-1])
+        self.input_count += 1
 
-    return comb_outputs
+        if self.input_count == self.R:
+            self.input_count = 0
+            comb_input = sample
+
+            for i in range(self.N):
+                idx = self.comb_indices[i]
+                delayed = self.comb_buffers[i][idx]
+                self.comb_buffers[i][idx] = comb_input
+                self.comb_indices[i] = (idx + 1) % self.M
+                comb_input = int(comb_input - delayed)
+
+            return comb_input
+        else:
+            return None
+
+    def process(self, signal):
+        output = []
+        for s in signal:
+            y = self.process_sample(s)
+            if y is not None:
+                output.append(y)
+        return output
 
 
 def pdm_to_pcm(pdm_signal, decimation_factor=64, filter_type='fir', filter_kwargs={}):
@@ -68,11 +79,11 @@ def pdm_to_pcm(pdm_signal, decimation_factor=64, filter_type='fir', filter_kwarg
         kwargs = {}
         kwargs.update(defaults)
         kwargs.update(filter_kwargs)
-        # Convert 1-bit PDM to +/-1 format
-        print(pdm_signal)
         pdm_signal = pdm_signal.astype(int)
-        #pdm_signal = [2*s - 1 for s in pdm_signal.astype(int)]
-        pcm_signal = cic_decimate(pdm_signal, decimation_factor=decimation_factor, **kwargs) 
+        cic = CICFilter(decimation=decimation_factor, **kwargs)
+        # Convert 1-bit PDM to +/-1 format
+        pdm_signal = [2*s - 1 for s in pdm_signal.astype(int)]
+        pcm_signal = cic.process(pdm_signal)
         pcm_signal = numpy.array(pcm_signal, dtype=float)
 
     return pcm_signal
@@ -109,9 +120,11 @@ def main():
     #print(pcm_data.shape)
 
     pcm_data -= numpy.mean(pcm_data) # remove DC offset
+    pcm_data = pcm_data / (numpy.max(numpy.abs(pcm_data)) * 2.0) # normalize scale
     print(numpy.min(pcm_data), numpy.max(pcm_data), numpy.mean(pcm_data), pcm_data.dtype)
 
-    soundfile.write(out_path, pcm_data, samplerate)
+
+    soundfile.write(out_path, pcm_data, samplerate, subtype='PCM_16')
     print('Wrote', out_path)
 
 if __name__ == '__main__':
