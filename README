@@ -18,6 +18,8 @@ UART
 References
 	Adafruit PDM Microphone Breakout
 		https://learn.adafruit.com/adafruit-pdm-microphone-breakout/
+	Cascaded Integrator-Comb (CIC) Filters
+		https://www.dsprelated.com/showarticle/1337.php
 	CIC filter in Verilog
 		https://github.com/ericgineer/CIC/blob/master/CIC.v
 	Pulse Density Modulation
