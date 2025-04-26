@@ -1,0 +1,12 @@
+---
+Language: Cpp
+
+BasedOnStyle: LLVM
+
+AllowShortFunctionsOnASingleLine: None
+BreakBeforeBraces: Linux
+IndentWidth: 8
+AlwaysBreakAfterReturnType: AllDefinitions
+UseTab: Always
+
+...
