@@ -6,7 +6,9 @@ module cic3_pdm (
     input  wire        rst,        // active-high synchronous reset
     input  wire        pdm_in,     // 1-bit PDM data input
     output wire signed [15:0] pcm_out, // Decimated PCM output
-    output wire        pcm_valid   // High when pcm_out is valid
+    output wire        pcm_valid,   // High when pcm_out is valid       
+    output reg        pdm_out
+
 );
     parameter DECIMATION = 64; // Decimation factor
 
@@ -46,7 +48,7 @@ module cic3_pdm (
     // Comb stage (runs every DECIMATION clocks)
     always @(posedge clk) begin
         pcm_valid_r <= 0;
-        if (decim_counter == DECIMATION[5:0] - 1) begin
+        if (decim_counter == 63) begin
             comb_0 <= integrator_2 - delay_0;
             delay_0 <= integrator_2;
 
@@ -57,6 +59,7 @@ module cic3_pdm (
             delay_2 <= comb_1;
 
             // Bit-shift down to get 16-bit output (tune shift based on DECIMATION and stage count)
+            pdm_out <= pdm_in;
             pcm_out_r <= comb_2[31:16]; 
             pcm_valid_r <= 1;
         end
