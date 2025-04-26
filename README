@@ -29,5 +29,8 @@ References
 		https://tomverbeure.github.io/2020/12/20/Design-of-a-Multi-Stage-PDM-to-PCM-Decimation-Pipeline.html
 	RMS in FPGA
 		https://www.controlpaths.com/2022/07/18/true-rms-compute-in-fpga/
+	Verilator
+		https://www.veripool.org/verilator/
+		https://verilator.org/guide/latest/
 	Verilog by Example (Blaine C. Raedler 2021)
 		http://readler.com/books2.html
