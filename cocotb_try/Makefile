@@ -4,7 +4,7 @@
 SIM ?= verilator
 TOPLEVEL_LANG ?= verilog
 
-VERILOG_SOURCES += $(PWD)/my_design.sv
+VERILOG_SOURCES += $(PWD)/my_design.v
 # use VHDL_SOURCES for VHDL files
 
 # TOPLEVEL is the name of the toplevel module in your Verilog or VHDL file
