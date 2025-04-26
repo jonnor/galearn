@@ -1,5 +1,3 @@
-TOP = hello
-
 all: obj_dir/Vhello
 
 check: all
