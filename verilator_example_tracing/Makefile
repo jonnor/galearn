@@ -1,0 +1,13 @@
+all: obj_dir/Vhello
+
+check: all
+	obj_dir/Vhello
+
+clean:
+	rm -fr obj_dir
+
+.PHONY: all check clean
+
+obj_dir/Vhello: hello.v sim_main.cc
+	verilator --cc --exe --trace --build -j 0 -Wall hello.v sim_main.cc
+	#verilator --cc --exe --trace --build -j 0 -Wall -O3 --x-assign fast --x-initial fast --noassert hello.v sim_main.cc
