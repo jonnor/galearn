@@ -13,6 +13,12 @@ TOPLEVEL = cic3_pdm
 # MODULE is the basename of the Python test file
 MODULE = test_cic
 
+# Try to make simlation faster
+#WAVES=0
+#COCOTB_HDL_TIMEPRECISION=100ps
+
+VERILATOR_FLAGS = -O3 --no-debug --output-split 20000
+
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim
 
