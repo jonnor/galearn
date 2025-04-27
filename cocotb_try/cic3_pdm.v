@@ -7,10 +7,11 @@ module cic3_pdm (
     input  wire        pdm_in,     // 1-bit PDM data input
     output wire signed [15:0] pcm_out, // Decimated PCM output
     output wire        pcm_valid,   // High when pcm_out is valid       
-    output reg        pdm_out
+    output reg         pdm_out
 
 );
     parameter DECIMATION = 64; // Decimation factor
+    parameter OUTPUT_SHIFT = 8; // Can tune this
 
     // Internal registers
     reg signed [31:0] integrator_0 = 0;
@@ -60,7 +61,7 @@ module cic3_pdm (
 
             // Bit-shift down to get 16-bit output (tune shift based on DECIMATION and stage count)
             pdm_out <= pdm_in;
-            pcm_out_r <= comb_2[31:16]; 
+            pcm_out_r <= comb_2[OUTPUT_SHIFT + 15 : OUTPUT_SHIFT];
             pcm_valid_r <= 1;
         end
     end
