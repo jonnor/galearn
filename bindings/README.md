@@ -10,6 +10,8 @@ Install with pip or via OS package manager.
     numpy
     setuptools
 
+Debian:
+    apt install python3-pybind11 python3-numpy python3-setuptools
 
 ## Building
 
