@@ -9,7 +9,7 @@ module cic3_pdm (
     output wire        pcm_valid
 
 );
-    parameter DECIMATION = 64; // Decimation factor
+    //parameter DECIMATION = 64; // Decimation factor
     parameter OUTPUT_SHIFT = 8; // Can tune this
 
     // Internal registers

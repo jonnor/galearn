@@ -3,7 +3,7 @@ import pybind11
 import numpy
 import os.path
 
-verilated_build_dir = '../verilator_lib/obj_dir/'
+verilated_build_dir = './obj_dir/'
 
 ext_modules = [
     Extension(

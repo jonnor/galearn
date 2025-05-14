@@ -11,7 +11,7 @@ clean:
 
 .PHONY: all check clean
 
-${SHARED_LIB}: ../verilator_lib/mul.v ../verilator_lib/sim.cc
+${SHARED_LIB}: ../cocotb_try/cic3_pdm.v ./sim_cic3_pdm.cc
 	verilator --cc --lib-create sim --build -j 0 -Wall $^
 
 check: ${PY_MODULE}
@@ -20,4 +20,3 @@ check: ${PY_MODULE}
 ${PY_MODULE}: ${SHARED_LIB}
 	python setup.py build_ext --inplace
 
-    
