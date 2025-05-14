@@ -9,9 +9,11 @@ Install with pip or via OS package manager.
     pybind11
     numpy
     setuptools
+    soundfile
+    matplotlib
 
 Debian:
-    apt install python3-pybind11 python3-numpy python3-setuptools
+    apt install python3-pybind11 python3-numpy python3-setuptools python3-soundfile python3-matplotlib
 
 ## Building
 
