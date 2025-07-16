@@ -8,10 +8,13 @@ check:
 clean:
 	rm -f top.asc top.bin top.json
 
+gui:
+	nextpnr-ice40 --hx1k --package tq144 --json top.json --pcf top.pcf --asc top.asc --top $(TOP) --gui
+
 load: all
 	iceprog top.bin
 
-.PHONY: all check clean load
+.PHONY: all check clean gui load
 
 top.asc: top.json top.pcf
 	nextpnr-ice40 --hx1k --package tq144 --json top.json --pcf top.pcf --asc top.asc --top $(TOP)
