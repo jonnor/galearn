@@ -34,3 +34,26 @@ References
 		https://verilator.org/guide/latest/
 	Verilog by Example (Blaine C. Raedler 2021)
 		http://readler.com/books2.html
+
+
+TinyTapeout submission
+
+    There are Github Actions that build the design. GDS output most interesting
+    https://tinytapeout.com/guides/workshop/create-your-gds/
+
+    https://github.com/jonnor/ttysky25a-pdm-microphone
+
+    tt-sky25a shuttle repo
+    https://github.com/TinyTapeout/tinytapeout-sky-25a
+
+    This seems like the correct template for sky25a submissions
+    But CI builds failing as of June 20, 2025!
+    https://github.com/TinyTapeout/ttsky-verilog-template
+
+    Others have submitted using to sky25a using these older templates
+    https://github.com/TinyTapeout/tt09-verilog-template
+    https://github.com/TinyTapeout/tt10-verilog-template
+
+    Examples
+    https://github.com/urish/tt09-giant-ring-oscillator
+    https://github.com/RVCE-ECE-Shylashree/TT10_LogAFPM-16
