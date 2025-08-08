@@ -1,13 +1,14 @@
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 
-int pdm2pcm_cic3(const uint8_t *pdm, int pdm_length, int16_t *pcm,
-		 int pcm_length);
+int pdm2pcm_cic3(const uint8_t *pdm, int64_t pdm_length,
+        int16_t *pcm, int32_t pcm_length,
+        uint8_t hpf_alpha, uint8_t scale_shift);
 
 namespace py = pybind11;
 
 int
-process(py::array_t<uint8_t> arr1, py::array_t<int16_t> arr2)
+process(py::array_t<uint8_t> arr1, py::array_t<int16_t> arr2, int hpf_alpha, int scale_shift)
 {
 	// Check shapes or sizes if needed
 	auto buf1 = arr1.request();
@@ -25,7 +26,7 @@ process(py::array_t<uint8_t> arr1, py::array_t<int16_t> arr2)
 	uint8_t *in = static_cast<uint8_t *>(buf1.ptr);
 	int16_t *out = static_cast<int16_t *>(buf2.ptr);
 
-	int samples = pdm2pcm_cic3(in, arr1.size(), out, arr2.size());
+	int samples = pdm2pcm_cic3(in, arr1.size(), out, arr2.size(), hpf_alpha, scale_shift);
 
 	return samples;
 }
