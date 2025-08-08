@@ -8,7 +8,11 @@ from pcm2pdm import convert, convert_file, save_pdm_bin
 from pdm2pcm import pdm_to_pcm, load_pdm_file
 from testsignal import generate_test_tone
 
-def plot_reconstruct(pcm_in, pdm, pcm_reconstructed, sr, aspect = 4.0, height = 3.0):
+def plot_reconstruct(pcm_in, pdm, pcm_reconstructed, sr,
+    aspect = 4.0,
+    height = 3.0,
+    pcm_marker = None,
+    ):
     # --- Plotting using OO API ---
     
     width = height * aspect
@@ -20,7 +24,7 @@ def plot_reconstruct(pcm_in, pdm, pcm_reconstructed, sr, aspect = 4.0, height = 
     t = np.linspace(0, duration, int(sr * duration), endpoint=False)
 
     # Plot original PCM
-    axs[0].plot(t, pcm_in, label="PCM_in", color='blue')
+    axs[0].plot(t, pcm_in, label="PCM_in", color='blue', marker=pcm_marker)
     axs[0].set_title("Original PCM")
     axs[0].set_ylabel("Amplitude")
     axs[0].set_ylim(-1.2, 1.2)
@@ -35,7 +39,7 @@ def plot_reconstruct(pcm_in, pdm, pcm_reconstructed, sr, aspect = 4.0, height = 
     axs[1].grid(True)
 
     # Plot reconstructed PCM
-    axs[2].plot(t, pcm_reconstructed[:len(t)], label="PCM_rec", color='green')
+    axs[2].plot(t, pcm_reconstructed[:len(t)], label="PCM_rec", color='green', marker=pcm_marker)
     axs[2].set_title("Reconstructed PCM")
     axs[2].set_ylabel("Amplitude")
     axs[2].set_xlabel("Time [s]")
