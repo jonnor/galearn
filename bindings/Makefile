@@ -15,7 +15,7 @@ ${SHARED_LIB}: ../cocotb_try/cic3_pdm.v ./sim_cic3_pdm.cc
 	verilator --cc --lib-create sim --build -j 0 -Wall $^
 
 check: ${PY_MODULE}
-	PYTHONPATH=../tools python test_galearn_pdm.py
+	PYTHONPATH=../tools python -m pytest -v test_galearn_pdm.py -s
 
 ${PY_MODULE}: ${SHARED_LIB}
 	python setup.py build_ext --inplace
