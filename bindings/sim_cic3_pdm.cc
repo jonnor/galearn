@@ -15,7 +15,7 @@ pdm2pcm_cic3(const uint8_t *pdm, int64_t pdm_length, int16_t *pcm, int32_t pcm_l
 
 	Vcic3_pdm *top = new Vcic3_pdm{cp};
 
-    top->hpf_alpha = hpf_alpha;
+    //top->hpf_alpha = hpf_alpha;
     top->scale_shift = scale_shift;
 
 	// Start clock off
