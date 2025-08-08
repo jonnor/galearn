@@ -2,8 +2,6 @@ import numpy as np
 import soundfile
 
 def second_order_delta_sigma(pcm):
-    # Normalize input XXX: remove normalization
-    #pcm = pcm / np.max(np.abs(pcm))
 
     n = len(pcm)
     pdm = np.zeros(n, dtype=np.uint8)
@@ -25,18 +23,36 @@ def second_order_delta_sigma(pcm):
 
     return pdm
 
-def save_pdm_bin(pdm_data, file):
-    packed = np.packbits(pdm_data)
-    file.write(packed)
+def first_order_delta_sigma(pcm):
+    n = len(pcm)
+    pdm = np.zeros(n, dtype=np.uint8)
+    integrator = 0.0
+    quantized = 0.0
+    for i in range(n):
+        integrator += pcm[i] - quantized
+        if integrator >= 0:
+            quantized = 1.0
+            pdm[i] = 1
+        else:
+            quantized = -1.0
+            pdm[i] = 0
+    return pdm
 
-def convert(pcm_data, oversample = 64):
+def convert(pcm_data, oversample = 64, order=2):
     # Oversample
     pcm_upsampled = np.repeat(pcm_data, oversample)
 
     # --- Convert to PDM ---
-    pdm_data = second_order_delta_sigma(pcm_upsampled)
+    if order == 1:
+        pdm_data = first_order_delta_sigma(pcm_upsampled)
+    elif order == 2:
+        pdm_data = second_order_delta_sigma(pcm_upsampled)
 
     return pdm_data
+
+def save_pdm_bin(pdm_data, file):
+    packed = np.packbits(pdm_data)
+    file.write(packed)
 
 def convert_file(input_file, **kwargs):
     # --- Load audio ---
