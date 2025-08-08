@@ -27,11 +27,7 @@ module cic3_pdm (
     
     // DC removal filter registers
     reg signed [19:0] dc_accumulator;  // 20-bit to prevent overflow
-    reg signed [15:0] dc_estimate;
-    /* verilator lint_off UNUSEDSIGNAL */
-    // Lower 8 bits of alpha_mult unused - we only need [23:8] for division by 256
-    reg signed [23:0] alpha_mult;      // For alpha multiplication
-    /* verilator lint_on UNUSEDSIGNAL */
+    
     
     wire signed [CIC_WIDTH-1:0] pdm_signed = pdm_in ? 17'sd1 : -17'sd1;
     
@@ -96,30 +92,31 @@ module cic3_pdm (
     always @(posedge clk) begin
         if (rst) begin
             dc_accumulator <= 20'sd0;
-            dc_estimate <= 16'sd0;
-            alpha_mult <= 24'sd0;
             pcm_out <= 0;
             pcm_valid <= 0;
         end else begin
             pcm_valid <= 0;
             
             if (cic_valid) begin
-                // Configurable DC removal using alpha parameter
-                // If dc_alpha = 0, bypass DC removal
-                // If dc_alpha = 255, strong DC removal (original /16 behavior)
                 if (dc_alpha == 8'd0) begin
                     // Bypass DC removal
                     pcm_out <= scaled_out;
                 end else begin
-                    // Calculate alpha * dc_estimate / 256
-                    alpha_mult <= dc_estimate * dc_alpha;
-                    dc_estimate <= dc_accumulator[19:4];  // Current estimate
+                    // Calculate the updated accumulator value first
+                    reg signed [19:0] new_accumulator;
+                    case (dc_alpha)
+                        8'd1:   new_accumulator = dc_accumulator - (dc_accumulator >>> 12) + {{4{scaled_out[15]}}, scaled_out};
+                        8'd16:  new_accumulator = dc_accumulator - (dc_accumulator >>> 8) + {{4{scaled_out[15]}}, scaled_out};
+                        8'd64:  new_accumulator = dc_accumulator - (dc_accumulator >>> 6) + {{4{scaled_out[15]}}, scaled_out};
+                        8'd255: new_accumulator = dc_accumulator - (dc_accumulator >>> 4) + {{4{scaled_out[15]}}, scaled_out};
+                        default: new_accumulator = dc_accumulator - (dc_accumulator >>> 8) + {{4{scaled_out[15]}}, scaled_out};
+                    endcase
                     
-                    // Leaky integrator: acc = acc - (alpha/256)*acc + scaled_out
-                    dc_accumulator <= dc_accumulator - {{4{alpha_mult[23]}}, alpha_mult[23:8]} + {{4{scaled_out[15]}}, scaled_out};
+                    // Update accumulator
+                    dc_accumulator <= new_accumulator;
                     
-                    // Output with DC removal
-                    pcm_out <= scaled_out - dc_estimate;
+                    // Output = input - NEW DC estimate (not old one)
+                    pcm_out <= scaled_out - new_accumulator[19:4];
                 end
                 pcm_valid <= 1;
             end

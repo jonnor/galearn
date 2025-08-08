@@ -137,7 +137,7 @@ def test_dc():
     out = numpy.zeros(shape=len(pdm_input)//DECIMATION, dtype=numpy.int16)
 
     # Process using filter
-    n_samples = galearn_pdm.process(pdm_input, out, 100, 0)
+    n_samples = galearn_pdm.process(pdm_input, out, 64, 0)
     out = out / (2**12)
 
     # Compensate for delay through filter
