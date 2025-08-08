@@ -76,8 +76,8 @@ def test_sine_simple(frequency):
     out = numpy.zeros(shape=len(pdm_input)//DECIMATION, dtype=numpy.int16)
 
     # Process using filter
-    n_samples = galearn_pdm.process(pdm_input, out, 255, 1)
-    out = out / (2**15)
+    n_samples = galearn_pdm.process(pdm_input, out, 0, 0)
+    out = out / (2**12)
 
     # Compensate for delay through filter
     delay = find_forward_shift(pcm_input, out)
@@ -137,7 +137,7 @@ def test_dc():
     out = numpy.zeros(shape=len(pdm_input)//DECIMATION, dtype=numpy.int16)
 
     # Process using filter
-    n_samples = galearn_pdm.process(pdm_input, out, 50, 0)
+    n_samples = galearn_pdm.process(pdm_input, out, 100, 0)
     out = out / (2**12)
 
     # Compensate for delay through filter

@@ -4,6 +4,7 @@ module cic3_pdm (
     input  wire        pdm_in,        // 1-bit PDM data input
 
     input  wire [2:0]  scale_shift,   // Right shift amount (0-7 bits)
+    input  wire [7:0]  dc_alpha,      // DC removal alpha (0=bypass, 255=strong removal)
     output reg  signed [15:0] pcm_out, // Decimated PCM output
     output reg         pcm_valid       // Output valid pulse
 );
@@ -27,6 +28,10 @@ module cic3_pdm (
     // DC removal filter registers
     reg signed [19:0] dc_accumulator;  // 20-bit to prevent overflow
     reg signed [15:0] dc_estimate;
+    /* verilator lint_off UNUSEDSIGNAL */
+    // Lower 8 bits of alpha_mult unused - we only need [23:8] for division by 256
+    reg signed [23:0] alpha_mult;      // For alpha multiplication
+    /* verilator lint_on UNUSEDSIGNAL */
     
     wire signed [CIC_WIDTH-1:0] pdm_signed = pdm_in ? 17'sd1 : -17'sd1;
     
@@ -92,19 +97,30 @@ module cic3_pdm (
         if (rst) begin
             dc_accumulator <= 20'sd0;
             dc_estimate <= 16'sd0;
+            alpha_mult <= 24'sd0;
             pcm_out <= 0;
             pcm_valid <= 0;
         end else begin
             pcm_valid <= 0;
             
             if (cic_valid) begin
-                // Update DC estimate using leaky integrator
-                // acc = acc - acc/16 + scaled_out
-                dc_estimate <= dc_accumulator[19:4];  // Divide by 16
-                dc_accumulator <= dc_accumulator - {{4{dc_estimate[15]}}, dc_estimate} + {{4{scaled_out[15]}}, scaled_out};
-                
-                // Output is scaled CIC output minus DC estimate
-                pcm_out <= scaled_out - dc_estimate;
+                // Configurable DC removal using alpha parameter
+                // If dc_alpha = 0, bypass DC removal
+                // If dc_alpha = 255, strong DC removal (original /16 behavior)
+                if (dc_alpha == 8'd0) begin
+                    // Bypass DC removal
+                    pcm_out <= scaled_out;
+                end else begin
+                    // Calculate alpha * dc_estimate / 256
+                    alpha_mult <= dc_estimate * dc_alpha;
+                    dc_estimate <= dc_accumulator[19:4];  // Current estimate
+                    
+                    // Leaky integrator: acc = acc - (alpha/256)*acc + scaled_out
+                    dc_accumulator <= dc_accumulator - {{4{alpha_mult[23]}}, alpha_mult[23:8]} + {{4{scaled_out[15]}}, scaled_out};
+                    
+                    // Output with DC removal
+                    pcm_out <= scaled_out - dc_estimate;
+                end
                 pcm_valid <= 1;
             end
         end
