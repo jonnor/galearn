@@ -25,17 +25,23 @@ module cic3_pdm (
     reg signed [15:0] scaled_out;
     reg cic_valid;
     
-    // HPF registers
-    reg signed [15:0] hpf_x_prev;
-    reg signed [15:0] hpf_y_prev;
+    // Leaky integrator HPF registers
+    reg signed [23:0] hpf_integrator;  // 24-bit for precision
+    reg signed [15:0] hpf_output;
     
     // HPF calculation wires
+    wire signed [8:0] hpf_complement;
+    wire signed [23:0] hpf_scaled_input;
+    wire signed [23:0] hpf_dc_estimate;
     /* verilator lint_off UNUSEDSIGNAL */
-    wire signed [23:0] hpf_temp;
+    wire signed [23:0] hpf_temp_result;
     /* verilator lint_on UNUSEDSIGNAL */
-    wire signed [15:0] hpf_calc;
     
-    // Convert 1-bit PDM to signed
+    // HPF wire assignments
+    assign hpf_complement = 9'd256 - {1'b0, hpf_alpha};
+    assign hpf_scaled_input = {{8{scaled_out[15]}}, scaled_out};
+    assign hpf_dc_estimate = hpf_integrator >>> 8;
+    assign hpf_temp_result = hpf_scaled_input - hpf_dc_estimate;
     wire signed [CIC_WIDTH-1:0] pdm_signed = pdm_in ? 17'sd1 : -17'sd1;
     
     // CIC Integrator stages (run at PDM rate)
@@ -95,15 +101,13 @@ module cic3_pdm (
         endcase
     end
     
-    // HPF calculation
-    assign hpf_temp = ((hpf_alpha * hpf_y_prev) + (({8'd0, scaled_out} - {8'd0, hpf_x_prev}) << 8)) >>> 8;
-    assign hpf_calc = hpf_temp[15:0];
-    
-    // High-pass filter (1st order IIR: y[n] = alpha/256 * y[n-1] + (x[n] - x[n-1]))
+    // Leaky integrator-based DC blocker
+    // y[n] = x[n] - dc_estimate
+    // dc_estimate[n] = alpha/256 * dc_estimate[n-1] + (1-alpha/256) * x[n]
     always @(posedge clk) begin
         if (rst) begin
-            hpf_x_prev <= 0;
-            hpf_y_prev <= 0;
+            hpf_integrator <= 0;
+            hpf_output <= 0;
             pcm_out <= 0;
             pcm_valid <= 0;
         end else begin
@@ -114,10 +118,14 @@ module cic3_pdm (
                     // Bypass HPF completely
                     pcm_out <= scaled_out;
                 end else begin
-                    // HPF computation: y[n] = alpha/256 * y[n-1] + (x[n] - x[n-1])
-                    pcm_out <= hpf_calc;
-                    hpf_x_prev <= scaled_out;
-                    hpf_y_prev <= hpf_calc;
+                    // Update leaky integrator (DC estimate)
+                    // integrator = alpha * integrator + (256-alpha) * input
+                    hpf_integrator <= (hpf_alpha * hpf_dc_estimate) + 
+                                     (hpf_complement * hpf_scaled_input);
+                    
+                    // Output = input - DC estimate
+                    hpf_output <= hpf_temp_result[15:0];
+                    pcm_out <= hpf_output;
                 end
                 pcm_valid <= 1;
             end

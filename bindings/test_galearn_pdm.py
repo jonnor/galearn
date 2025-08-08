@@ -126,19 +126,19 @@ def test_dc():
     function = sys._getframe().f_code.co_name # looks up function name
     test_name = f'{function}' 
     sr = SAMPLERATE_DEFAULT
-    test_duration = 0.0013
+    test_duration = 0.030
 
     # Generate test data
     frequency = 1000
     pcm_input = generate_test_tone(duration_sec=test_duration,
-        freqs=[frequency], noise_level=0.0, sample_rate=sr, amplitude=0.01,
-    ) + 0.10 # DC
+        freqs=[frequency], noise_level=0.0, sample_rate=sr, amplitude=0.1,
+    ) + 0.20 # DC
     pdm_input = convert(pcm_input)
     out = numpy.zeros(shape=len(pdm_input)//DECIMATION, dtype=numpy.int16)
 
     # Process using filter
-    n_samples = galearn_pdm.process(pdm_input, out, 200, 1)
-    out = out / (2**15) # XXX: where does this magical come from?
+    n_samples = galearn_pdm.process(pdm_input, out, 128, 5)
+    out = out / (2**12)
 
     # Compensate for delay through filter
     delay = find_forward_shift(pcm_input, out)
