@@ -102,21 +102,18 @@ module cic3_pdm (
                     // Bypass DC removal
                     pcm_out <= scaled_out;
                 end else begin
-                    // Calculate the updated accumulator value first
-                    reg signed [19:0] new_accumulator;
+                    // Simple leaky integrator with sign extension
                     case (dc_alpha)
-                        8'd1:   new_accumulator = dc_accumulator - (dc_accumulator >>> 12) + {{4{scaled_out[15]}}, scaled_out};
-                        8'd16:  new_accumulator = dc_accumulator - (dc_accumulator >>> 8) + {{4{scaled_out[15]}}, scaled_out};
-                        8'd64:  new_accumulator = dc_accumulator - (dc_accumulator >>> 6) + {{4{scaled_out[15]}}, scaled_out};
-                        8'd255: new_accumulator = dc_accumulator - (dc_accumulator >>> 4) + {{4{scaled_out[15]}}, scaled_out};
-                        default: new_accumulator = dc_accumulator - (dc_accumulator >>> 8) + {{4{scaled_out[15]}}, scaled_out};
+                        8'd1:   dc_accumulator <= dc_accumulator - (dc_accumulator >>> 12) + {{4{scaled_out[15]}}, scaled_out};
+                        8'd16:  dc_accumulator <= dc_accumulator - (dc_accumulator >>> 8) + {{4{scaled_out[15]}}, scaled_out};
+                        8'd64:  dc_accumulator <= dc_accumulator - (dc_accumulator >>> 6) + {{4{scaled_out[15]}}, scaled_out};
+                        8'd128:  dc_accumulator <= dc_accumulator - (dc_accumulator >>> 5) + {{4{scaled_out[15]}}, scaled_out};
+                        8'd255: dc_accumulator <= dc_accumulator - (dc_accumulator >>> 4) + {{4{scaled_out[15]}}, scaled_out};
+                        default: dc_accumulator <= dc_accumulator - (dc_accumulator >>> 8) + {{4{scaled_out[15]}}, scaled_out};
                     endcase
                     
-                    // Update accumulator
-                    dc_accumulator <= new_accumulator;
-                    
-                    // Output = input - NEW DC estimate (not old one)
-                    pcm_out <= scaled_out - new_accumulator[19:4];
+                    // Output = input - DC estimate (using OLD estimate to avoid combinational loop)
+                    pcm_out <= scaled_out - dc_accumulator[19:4];
                 end
                 pcm_valid <= 1;
             end
