@@ -15,6 +15,8 @@ pdm2pcm_cic3(const uint8_t *pdm, int pdm_length, int16_t *pcm, int pcm_length)
 
 	Vcic3_pdm *top = new Vcic3_pdm{cp};
 
+    top->hpf_alpha = 240;
+
 	// Start clock off
 	top->clk = 0;
 

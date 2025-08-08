@@ -18,5 +18,6 @@ check: ${PY_MODULE}
 	PYTHONPATH=../tools python -m pytest -v test_galearn_pdm.py -s
 
 ${PY_MODULE}: ${SHARED_LIB}
+	rm -rf build/ # force rebuild, setup.py does not discover changes to .h files
 	python setup.py build_ext --inplace
 

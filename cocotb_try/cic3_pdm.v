@@ -1,10 +1,10 @@
 
-// XXX: A chatbot wrote this, might be complete crack
 
 module cic3_pdm (
     input  wire        clk,        // PDM clock
     input  wire        rst,        // active-high synchronous reset
     input  wire        pdm_in,     // 1-bit PDM data input
+    input  wire [7:0]  hpf_alpha,  // HPF coefficient (0-255, 255=bypass)
     output wire signed [15:0] pcm_out, // Decimated PCM output
     output wire        pcm_valid
 
@@ -22,6 +22,12 @@ module cic3_pdm (
 
     /* verilator lint_off UNUSEDSIGNAL */
     reg signed [31:0] comb_2 = 0;
+
+    // HPF registers
+    reg signed [15:0] hpf_prev = 0;     // Previous input sample
+
+    // CIC output
+    wire signed [15:0] cic_out = comb_2[OUTPUT_SHIFT + 15 : OUTPUT_SHIFT];
 
     reg signed [31:0] delay_0 = 0, delay_1 = 0, delay_2 = 0;
 
@@ -49,10 +55,15 @@ module cic3_pdm (
             decim_counter <= decim_counter + 1;
     end
 
-    // Comb stage (runs every DECIMATION clocks)
+    // Comb + HPF stage (runs every DECIMATION clocks)
     always @(posedge clk) begin
         pcm_valid_r <= 0;
-        if (decim_counter == 63) begin
+
+        if (rst) begin
+            hpf_prev <= 0;
+            pcm_out_r <= 0;
+        end else if (decim_counter == 63) begin
+
             comb_0 <= integrator_2 - delay_0;
             delay_0 <= integrator_2;
 
@@ -62,8 +73,15 @@ module cic3_pdm (
             comb_2 <= comb_1 - delay_2;
             delay_2 <= comb_1;
 
-            // Bit-shift down to get 16-bit output (tune shift based on DECIMATION and stage count)
-            pcm_out_r <= comb_2[OUTPUT_SHIFT + 15 : OUTPUT_SHIFT];
+            // Simple DC blocking HPF: y[n] = x[n] - x[n-1] + alpha*y[n-1]
+            if (hpf_alpha == 8'd255) begin
+                pcm_out_r <= cic_out;
+            end else begin
+                // HPF equation rearranged for better stability
+                pcm_out_r <= cic_out - hpf_prev + ((pcm_out_r * hpf_alpha) >>> 8);
+            end
+            hpf_prev <= cic_out;
+
             pcm_valid_r <= 1;
         end
     end

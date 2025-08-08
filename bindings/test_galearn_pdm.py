@@ -121,3 +121,64 @@ def test_sine_simple(frequency):
     average = numpy.mean(out)
     assert abs(average) < 0.06
 
+
+def test_dc():
+    function = sys._getframe().f_code.co_name # looks up function name
+    test_name = f'{function}' 
+    sr = SAMPLERATE_DEFAULT
+    test_duration = 0.10
+
+    # Generate test data
+    frequency = 1000
+    pcm_input = generate_test_tone(duration_sec=test_duration,
+        freqs=[frequency], noise_level=0.0, sample_rate=sr, amplitude=0.01,
+    ) + 0.20 # DC
+    pdm_input = convert(pcm_input)
+    out = numpy.zeros(shape=len(pdm_input)//DECIMATION, dtype=numpy.int16)
+
+    # Process using filter
+    n_samples = galearn_pdm.process(pdm_input, out)
+    out = out / 1024 # XXX: where does this magical come from?
+
+    # Compensate for delay through filter
+    delay = find_forward_shift(pcm_input, out)
+    out_shifted = out[delay:-1]
+    input_trimmed = pcm_input[:len(out_shifted)]
+    #out_shifted = out_shifted[5:-5]
+    #input_trimmed = input_trimmed[5:-5]
+    error = out_shifted - input_trimmed
+
+    # Plot diagnostics, if enabled
+    if enable_plotting:
+        plot_path = os.path.join(out_dir, test_name, 'reconstructed.png')
+        ensure_dir_for_file(plot_path)
+        fig = plot_reconstruct(pcm_input, pdm_input, out, sr=sr,
+            aspect=6.0, pcm_marker='o')
+        fig.savefig(plot_path)
+        print('Wrote', plot_path)
+
+        plot_path = os.path.join(out_dir, test_name, 'shifted.png')
+        ensure_dir_for_file(plot_path)
+        fig = plot_reconstruct(input_trimmed, pdm_input, error, sr=sr,
+            aspect=6.0, pcm_marker='o')
+        fig.savefig(plot_path)
+        print('Wrote', plot_path)
+
+    # Do checks
+    n_stages = 3
+    expect_delay = n_stages + 1 # XXX: might not be fully correct
+    assert delay == expect_delay
+    delay = expect_delay
+
+    # Check that waveform is quite similar
+    # NOTE: at high frequencies there is an expected reduction in gain/amplitude
+    # if one would compensate for that, could probably tighten these limits
+    mse = numpy.mean(error**2)
+    mae = numpy.mean(numpy.abs(error))
+    assert mse < 0.10
+    assert mae < 0.06
+
+    # Check there is no DC
+    average = numpy.mean(out)
+    assert abs(average) < 0.06
+
