@@ -6,6 +6,7 @@ Test the PDM filter
 import time
 import os
 import sys
+import math
 
 import numpy
 import pandas
@@ -73,7 +74,7 @@ def test_sine_simple(frequency):
         freqs=[frequency], noise_level=0.0, sample_rate=sr, amplitude=0.9,
     )
     pdm_input = convert(pcm_input)
-    out = numpy.zeros(shape=len(pdm_input)//DECIMATION, dtype=numpy.int16)
+    out = numpy.zeros(shape=math.ceil(len(pdm_input)/DECIMATION), dtype=numpy.int16)
 
     # Process using filter
     #scale = (2**12)
