@@ -53,8 +53,6 @@ module cic3_pdm (
     // Comb stage (runs every DECIMATION clocks)
     always @(posedge clk or posedge rst) begin
 
-        pcm_valid_r <= 0; // make sure valid goes low after high pulse
-
         if (rst) begin
             comb_0 <= 0;
             comb_1 <= 0;
@@ -64,19 +62,23 @@ module cic3_pdm (
             delay_2 <= 0;
             pcm_valid_r <= 0;
             pcm_out_r <= 0;
-        end else if (decim_counter == 63) begin
-            comb_0 <= integrator_2 - delay_0;
-            delay_0 <= integrator_2;
+        end else begin
+            if (decim_counter == 63) begin
+                comb_0 <= integrator_2 - delay_0;
+                delay_0 <= integrator_2;
 
-            comb_1 <= comb_0 - delay_1;
-            delay_1 <= comb_0;
+                comb_1 <= comb_0 - delay_1;
+                delay_1 <= comb_0;
 
-            comb_2 <= comb_1 - delay_2;
-            delay_2 <= comb_1;
+                comb_2 <= comb_1 - delay_2;
+                delay_2 <= comb_1;
 
-            // Bit-shift down to get 16-bit output (tune shift based on DECIMATION and stage count)
-            pcm_out_r <= comb_2[OUTPUT_SHIFT + 15 : OUTPUT_SHIFT];
-            pcm_valid_r <= 1;
+                // Bit-shift down to get 16-bit output (tune shift based on DECIMATION and stage count)
+                pcm_out_r <= comb_2[OUTPUT_SHIFT + 15 : OUTPUT_SHIFT];
+                pcm_valid_r <= 1;
+            end else begin
+                pcm_valid_r <= 0; // make sure valid goes low after high pulse
+            end
         end
 
     end
