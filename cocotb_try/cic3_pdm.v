@@ -13,23 +13,24 @@ module cic3_pdm (
     parameter OUTPUT_SHIFT = 8; // Can tune this
 
     // Internal registers
-    reg signed [31:0] integrator_0 = 0;
-    reg signed [31:0] integrator_1 = 0;
-    reg signed [31:0] integrator_2 = 0;
+    reg signed [31:0] integrator_0;
+    reg signed [31:0] integrator_1;
+    reg signed [31:0] integrator_2;
 
-    reg [5:0] decim_counter = 0;
-    reg signed [31:0] comb_0 = 0, comb_1 = 0;
+    reg [5:0] decim_counter;
+    reg signed [31:0] comb_0;
+    reg signed [31:0] comb_1;
 
     /* verilator lint_off UNUSEDSIGNAL */
-    reg signed [31:0] comb_2 = 0;
+    reg signed [31:0] comb_2;
 
-    reg signed [31:0] delay_0 = 0, delay_1 = 0, delay_2 = 0;
+    reg signed [31:0] delay_0, delay_1, delay_2;
 
-    reg signed [15:0] pcm_out_r = 0;
-    reg pcm_valid_r = 0;
+    reg signed [15:0] pcm_out_r;
+    reg pcm_valid_r;
 
     // Integrator stage (runs every clk)
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
         if (rst) begin
             integrator_0 <= 0;
             integrator_1 <= 0;
@@ -42,7 +43,7 @@ module cic3_pdm (
     end
 
     // Decimation counter
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
         if (rst)
             decim_counter <= 0;
         else
@@ -50,9 +51,20 @@ module cic3_pdm (
     end
 
     // Comb stage (runs every DECIMATION clocks)
-    always @(posedge clk) begin
-        pcm_valid_r <= 0;
-        if (decim_counter == 63) begin
+    always @(posedge clk or posedge rst) begin
+
+        pcm_valid_r <= 0; // make sure valid goes low after high pulse
+
+        if (rst) begin
+            comb_0 <= 0;
+            comb_1 <= 0;
+            comb_2 <= 0;
+            delay_0 <= 0;
+            delay_1 <= 0;
+            delay_2 <= 0;
+            pcm_valid_r <= 0;
+            pcm_out_r <= 0;
+        end else if (decim_counter == 63) begin
             comb_0 <= integrator_2 - delay_0;
             delay_0 <= integrator_2;
 
@@ -66,6 +78,7 @@ module cic3_pdm (
             pcm_out_r <= comb_2[OUTPUT_SHIFT + 15 : OUTPUT_SHIFT];
             pcm_valid_r <= 1;
         end
+
     end
 
     assign pcm_out = pcm_out_r;
