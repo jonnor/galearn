@@ -32,7 +32,7 @@ module cic3_pdm (
     wire signed [CIC_WIDTH-1:0] pdm_signed = pdm_in ? 17'sd1 : -17'sd1;
     
     // CIC Integrator stages (run at PDM rate)
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
         if (rst) begin
             integrator1 <= 0;
             integrator2 <= 0;
@@ -43,7 +43,7 @@ module cic3_pdm (
     end
     
     // Decimation counter and CIC comb stages
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
         if (rst) begin
             decim_count <= 0;
             comb1 <= 0;
@@ -89,7 +89,7 @@ module cic3_pdm (
     end
     
     // DC removal filter - runs at decimated rate
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
         if (rst) begin
             dc_accumulator <= 20'sd0;
             pcm_out <= 0;
