@@ -14,7 +14,7 @@ import pytest
 
 from pcm2pdm import convert
 from testsignal import generate_test_tone
-from test_pdm import plot_reconstruct
+from test_pdm import plot_reconstruct, measure_snr_white_noise, plot_snr_results
 import galearn_pdm
 
 SAMPLERATE_DEFAULT = 16000
@@ -182,4 +182,35 @@ def test_dc():
     # Check there is no DC
     average = numpy.mean(out)
     assert abs(average) < 0.06
+
+
+def test_whitenoise():
+    function = sys._getframe().f_code.co_name # looks up function name
+    test_name = f'{function}' 
+    sr = SAMPLERATE_DEFAULT
+    test_duration = 2.0
+
+    def filter(pcm_input):
+        pdm_input = convert(pcm_input)
+        out = numpy.zeros(shape=len(pdm_input)//DECIMATION, dtype=numpy.int16)
+        n_samples = galearn_pdm.process(pdm_input, out, 0, 0)
+        out = out / (2**12)
+        return out
+
+    results = measure_snr_white_noise(
+        filter_func=filter,
+        fs=sr,
+        duration=test_duration,
+        freq_bands=[(20, 200), (200, 2000), (2000, 8000), (8000, 16000)]
+    )
+
+    # Plot diagnostics, if enabled
+    if enable_plotting:
+        # FIXME:
+        plot_path = os.path.join(out_dir, test_name, 'shifted.png')
+        ensure_dir_for_file(plot_path)
+        fig = plot_snr_results(results)
+        fig.savefig(plot_path)
+        print('Wrote', plot_path)
+
 
