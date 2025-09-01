@@ -226,6 +226,85 @@ def plot_snr_results(results):
     return fig
 
 
+def measure_frequency_response(filter_func, start_freq, end_freq, steps, fs=44100):
+   frequencies = np.logspace(np.log10(start_freq), np.log10(end_freq), steps)
+   results = []
+   
+   for f in frequencies:
+       t = np.linspace(0, 10/f, int(fs * 10/f))
+       input_signal = np.sin(2 * np.pi * f * t)
+       output_signal = filter_func(input_signal)
+       
+       steady_start = len(output_signal) // 2
+       input_fft = np.fft.fft(input_signal[steady_start:])
+       output_fft = np.fft.fft(output_signal[steady_start:])
+       
+       freqs = np.fft.fftfreq(len(output_fft), 1/fs)
+       pos_freqs = freqs[:len(freqs)//2]
+       peak_bin = np.argmax(np.abs(input_fft[:len(input_fft)//2]))
+       peak_freq = pos_freqs[peak_bin]
+       
+       # Verify peak frequency
+       freq_error = abs(peak_freq - f) / f
+       freq_valid = freq_error <= 0.05
+       
+       # Signal power (at fundamental)
+       signal_power = abs(output_fft[peak_bin])**2
+       
+       # Noise power (everything except fundamental and DC)
+       noise_bins = np.arange(1, len(pos_freqs))
+       noise_bins = noise_bins[noise_bins != peak_bin]
+       noise_power = np.sum(np.abs(output_fft[noise_bins])**2)
+       
+       # Transfer function and SNR
+       H = output_fft[peak_bin] / input_fft[peak_bin]
+       magnitude_db = 20 * np.log10(abs(H))
+       phase_deg = np.degrees(np.angle(H))
+       snr_db = 10 * np.log10(signal_power / noise_power)
+       
+       results.append({
+           'frequency_hz': f,
+           'magnitude_db': magnitude_db,
+           'phase_deg': phase_deg,
+           'snr_db': snr_db,
+           'peak_freq_hz': peak_freq,
+           'freq_error_pct': freq_error * 100,
+           'freq_valid': freq_valid
+       })
+   
+   return pd.DataFrame(results)
+
+
+def plot_filter_response(df):
+    """Plot filter frequency response with magnitude, phase, and SNR"""
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(15, 5))
+    
+    # 1. Magnitude response
+    ax1.semilogx(df['frequency_hz'], df['magnitude_db'])
+    ax1.grid(True, alpha=0.3)
+    ax1.set_xlabel('Frequency (Hz)')
+    ax1.set_ylabel('Magnitude (dB)')
+    ax1.set_title('Magnitude Response')
+    ax1.axhline(-3, color='r', linestyle='--', alpha=0.7, label='-3dB line')
+    ax1.legend()
+    
+    # 2. Phase response
+    ax2.semilogx(df['frequency_hz'], df['phase_deg'])
+    ax2.grid(True, alpha=0.3)
+    ax2.set_xlabel('Frequency (Hz)')
+    ax2.set_ylabel('Phase (degrees)')
+    ax2.set_title('Phase Response')
+    
+    # 3. SNR vs Frequency
+    ax3.semilogx(df['frequency_hz'], df['snr_db'])
+    ax3.grid(True, alpha=0.3)
+    ax3.set_xlabel('Frequency (Hz)')
+    ax3.set_ylabel('SNR (dB)')
+    ax3.set_title('Signal-to-Noise Ratio')
+    
+    fig.tight_layout()
+    return fig
+
 
 # Example usage
 def example_cic_filter(x):
